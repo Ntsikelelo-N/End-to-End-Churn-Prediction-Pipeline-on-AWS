@@ -1,4 +1,4 @@
-# End-to-End Customer Churn Prediction Piplenine on AWS
+# End-to-End Customer Churn Prediction Pipeline on AWS
 ## Project Overview
 Customer churn is a major business challenge - retaining existing customers is significantly cheaper than acquiring new ones.
 This project builds an automated, end-to-end data engineering and data science pipeline to predict customer churn using AWS Free Tier services, Python and other libraries.
@@ -39,6 +39,21 @@ Click **Create bucket** to create the bucket.
 
 ## Upload data to S3 bucket
 
-Click on the bucket created click `upload` button to get to import data into your bucket![customer churn bucket](screenshots/upload_to_S3.png).
+Click on the bucket created click `upload` button to get to import data into your bucket![customer churn bucket](screenshots/upload_to_S3.png)
 
-Click on `Add files`and select the customer_churn dataset or drag the dataset on to the indicated space ![data upload window](screenshots/data_upload_window.png). After uploading the dataset, click `Upload` at the bottom of the screen.
+Click on `Add files`and select the customer_churn dataset or drag the dataset on to the indicated space ![data upload window](screenshots/data_upload_window.png) After uploading the dataset, click `Upload` at the bottom of the page.
+
+## AWS GLUE Crawler Setup
+### Setup IAM role for the crawler
+On the `AWS management console`, navigate to `IAM`, Click on `Roles` on the left of the page, underneath the `Access Management` header. Click on `Create role` to the top right of the page. ![IAM page](screenshots/Role_in_IAM.png)
+
+Click on `AWS service` under `Trusted entity type` heading, under the `Use case` select `Glue` for `service or use case`, then click `next` at the bottom right of the page. ![Step 1](screenshots/page_1_roles.png)
+
+On step 2, click on the search bar and search for `AWSGlueServiceRole`, ensure that the type is `AWS managed`,the second service to select is `AmazonS3FullAccess`. Click `next` bottom right of the page. ![](screenshots/step_2_glue.png)
+
+On step 3, name your role, in my case it is named `AWSGlueChurnRole` scroll down to select `create role` at the bottom of the page. ![Final step of glue role](screenshots/step_3_glue.png)
+
+### Creating Glue Database
+Search for `AWS Glue` by either using the shortcut `Alt + S` on windows or by navigating to the top left of the page, to the search field. Click on `AWS Glue` and click on `Databases` below the `Data Catalog` heading. Click `Add database` towards the top right of the page. ![](screenshots/glue_database.png)
+
+Write down the name of your database. In my case it is named `churn_db` Then click `create database`.![Glue Database](image-1.png)
