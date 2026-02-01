@@ -19,7 +19,7 @@ Open the AWS management console from your root user and create a user, by naviga
 For extra security, it is recommended to set up MFA device, which adds an additional layer of safety to keep your account safe.
 
 
-![Created IAM USER](/screenshots/IAM_user.png)
+![Created IAM USER](screenshots/IAM_user.png)
 
 ### Download the AWS CLI
 Navigate to [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) to install/update your AWS CLI. This is going to be helpful to access the AWS services via management console.
@@ -30,7 +30,7 @@ When prompted for the region, you can look for region names on the management co
 
 ## Create S3 Buckets
 Navigate to **S3** on the management console. Click **Create bucket**, Choose **General purpose** write out <bucket_name>, this name has to be univerally unique from any other bucket names in the AWS. Leave other setting the same on the page. 
-![Bucket](/screenshots/creating_bucket.png)
+![Bucket](screenshots/creating_bucket.png)
 
 You can uncheck the **Block all public access** section if you want your bucket to be seen by others. You can enable bucket versioning if you require the bucket to keep track of changes made inside it.
 ![Bucket](screenshots/create_bucket_2.png)
@@ -56,4 +56,27 @@ On step 3, name your role, in my case it is named `AWSGlueChurnRole` scroll down
 ### Creating Glue Database
 Search for `AWS Glue` by either using the shortcut `Alt + S` on windows or by navigating to the top left of the page, to the search field. Click on `AWS Glue` and click on `Databases` below the `Data Catalog` heading. Click `Add database` towards the top right of the page. ![](screenshots/glue_database.png)
 
-Write down the name of your database. In my case it is named `churn_db` Then click `create database`.![Glue Database](image-1.png)
+Write down the name of your database. In my case it is named `churn_db` Then click `create database`.![Glue Database](screenshots/create_glue_database.png)
+
+### Creating Glue Crawler
+Click `Crawlers` underneath the `Data Catalog` on the left pane. Then click `Create crawler` toward the top right of the page.
+![Crawler creation page](screenshots/create_crawler_page.png)
+
+After clicking `create crawler`, The first step requires to name the crawler, named it `churn-raw-crawler`, then click `Next`.
+![step 1 crawler setup](screenshots/step_1_crawler.png)
+
+In the second step page named `Choose data sources and classifiers`, Select `Add a data source` underneath the `Data Sources`. In the pop up page, select `Browse S3` and choose the customer churn bucket from S3 (`churn-project-ntsikelelo`), or enter the S3 path on the space provided. Then click `Add an S3 data source`.
+![Step 2 crawler](screenshots/step_2_crawler.png)
+
+Click on next to got to step 3 named `Configure security settings`. Click on empty field below `Existing IAM role` sub-heading and choose the created `AWSGlueChurnRole` then click `Next`. ![](screenshots/step_3_crawler.png)
+
+Choose `churn_db` as `Target database`, write `raw_` on `Table name prefix - optional` field. Leave the `Frequency` on the `On demand` setting. If it was not pre selected like that change it to `On demand`. Then click on `Next`.![Set output and scheduling](screenshots/step_4_crawler.png).
+
+Review that everything is as expected and then click `Create crawler` on the bottom right of the page. ![Review and create](screenshots/step_5_crawler.png)
+
+### Running the crawler
+Click the check box next to the created crawler and click `Run` at the top of the page. Wait approximately 2 minutes after pressing it. ![Running crawler](screenshots/running_crawler.png)
+
+Click on `Databases` below the `Data Catalog` heading on the left pane then click on `churn_db`. ![](screenshots/confirming_database.png)
+
+There should be a table that starts with `raw_` as specified for the crawler instructions. ![Glue Database Table](screenshots/crawler_table.png)
