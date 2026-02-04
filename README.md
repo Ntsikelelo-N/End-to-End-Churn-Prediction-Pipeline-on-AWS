@@ -90,4 +90,12 @@ On the page that pops up, click on `Job details` tab and name your job `churn-et
 Click on the `Visual` tab and click on the big blue plus icon. This allows for addition of nodes to the Glue job. Search for `AWS Glue Data Catalog` and click on it, a mini pane will appear on the right of the screen with the heading `Data source properties - Data Catalog`, select `churn_db` as the Database and select `raw_churn_project_ntsikelelo` as the table. 
 ![Visual config of Glue](screenshots/glue_role_visual_config.png)
 
-Click on the big blue plus icon again to add a node. Search for `Change Schema` formerly known as `Apply Mapping`
+Click on the big blue plus icon again to add a node. Search for `Change Schema` formerly known as `Apply Mapping`. Choose the `Node parents` as `AWS Glue DataCatalog`. Change the chema based on incoming data. This ensures that the table schema is always in expected format. ![Change schema](screenshots/change_schema_glue.png)
+
+After configuring transformations in the `Visual tab`, navigate to the `Script` tab. This section exposes the underlying PySpark code that AWS Glue automatically generates based on the visual transformations applied.
+
+The Script tab allows for advanced control and customization of the ETL process. While the Visual interface is useful for basic schema changes and straightforward transformations, it is limited in flexibility. Script mode, on the other hand, supports more complex operations such as Custom feature engineerin and Conditional logic and more. It is important to note that any changes made directly in the Script tab may impact the visual representation of the job. Once custom code is added or existing logic is modified, the Visual editor may no longer fully reflect the updated transformations. However, all code present in the Script tab—both auto-generated and manually added—will still be executed when the job runs.
+
+After completing the required modifications, click `Save` at the top of the screen to ensure all changes are preserved before running the job. ![saving the script](screenshots/glue_script_mode.png)
+
+After that, click `Run` and the result of that will look like this. ![running job](screenshots/Page_after_running%20glue.png)
