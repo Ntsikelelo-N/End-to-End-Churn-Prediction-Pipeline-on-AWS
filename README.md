@@ -80,3 +80,14 @@ Click the check box next to the created crawler and click `Run` at the top of th
 Click on `Databases` below the `Data Catalog` heading on the left pane then click on `churn_db`. ![](screenshots/confirming_database.png)
 
 There should be a table that starts with `raw_` as specified for the crawler instructions. ![Glue Database Table](screenshots/crawler_table.png)
+
+### Creating Glue ETL Job
+Navigate to `AWS Glue`, `Jobs` then `Visual ETL`.  Click on `Visual ETL` below the `Create job` sub-heading. 
+![](screenshots/creating_glue_job_1.png)
+
+On the page that pops up, click on `Job details` tab and name your job `churn-etl-job`. Choose `AWSGlueChurnRole` in the `IAM role` of the job. Choose `Glue 4.0` for `Glue version` and leave `Language` selection as `Python 3`. Leave `Worker type` as `G 1X`. Scroll down and write `2` on the field beneath the `Requested number of workers`. Leave other settings as they are. This selection for the job details ensures that only free-tier resources are being used. ![Job details config for Glue](screenshots/Glue_role_job_details_1.png)
+
+Click on the `Visual` tab and click on the big blue plus icon. This allows for addition of nodes to the Glue job. Search for `AWS Glue Data Catalog` and click on it, a mini pane will appear on the right of the screen with the heading `Data source properties - Data Catalog`, select `churn_db` as the Database and select `raw_churn_project_ntsikelelo` as the table. 
+![Visual config of Glue](screenshots/glue_role_visual_config.png)
+
+Click on the big blue plus icon again to add a node. Search for `Change Schema` formerly known as `Apply Mapping`
