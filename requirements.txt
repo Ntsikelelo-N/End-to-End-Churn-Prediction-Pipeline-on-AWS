@@ -4,3 +4,4 @@ scikit-learn == 1.6.1
 matplotlib == 3.9.2
 seaborn == 0.13.2
 pytest == 8.2.0
+pyarrow == 23.0.0
