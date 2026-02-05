@@ -99,3 +99,5 @@ The Script tab allows for advanced control and customization of the ETL process.
 After completing the required modifications, click `Save` at the top of the screen to ensure all changes are preserved before running the job. ![saving the script](screenshots/glue_script_mode.png)
 
 After that, click `Run` and the result of that will look like this. ![running job](screenshots/Page_after_running%20glue.png)
+
+To confirm that the job ran, the command ```aws s3 ls s3://churn-project-ntsikelelo/processed/churn/``` was ran on the terminal. This will display if the expected data has been uploaded. ![Glue run confirmation](screenshots/glue_confirmation_of_run.png)
