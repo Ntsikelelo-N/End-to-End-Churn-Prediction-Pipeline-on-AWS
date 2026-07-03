@@ -1,0 +1,65 @@
+# ============================================================
+# .gitignore — End-to-End Churn Prediction Pipeline
+# ============================================================
+# CHANGED: There was no .gitignore. Without it, credentials, data files,
+# model artifacts, and .ipynb_checkpoints get committed by accident. A
+# recruiter who sees .env or AWS keys in a commit history will reject
+# the candidate immediately for security naivety.
+
+# --- Python build artefacts ------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# --- Virtual environments --------------------------------------------
+.venv/
+venv/
+env/
+.env/
+
+# --- Environment & secrets — NEVER commit credentials ----------------
+.env
+.env.*
+*.pem
+*credentials*
+aws_credentials.csv
+
+# --- Data files — stored in S3, not in git ---------------------------
+data/raw/*.csv
+data/raw/*.parquet
+data/processed/*.csv
+data/processed/*.parquet
+
+# --- Model artefacts — stored in S3 ----------------------------------
+models/*.pkl
+models/*.joblib
+models/*.json
+
+# --- Jupyter ---------------------------------------------------------
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+*/.ipynb_checkpoints
+
+# --- Coverage & testing artefacts ------------------------------------
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.tox/
+
+# --- IDEs & editors --------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# --- Logs ------------------------------------------------------------
+*.log
+logs/

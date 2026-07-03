@@ -1,99 +1,215 @@
 # End-to-End Customer Churn Prediction Pipeline on AWS
-## Project Overview
-Customer churn is a major business challenge - retaining existing customers is significantly cheaper than acquiring new ones.
-This project builds an automated, end-to-end data engineering and data science pipeline to predict customer churn using AWS Free Tier services, Python and other libraries.
 
-The system:
- - Ingest and stores data in amazon S3
- - Performs automated ETL and data validation
- - Conducts exploratory data analysis (EDA)
- - Trains and evaluates machine learning models
+[![CI](https://github.com/Ntsikelelo-N/End-to-End-Churn-Prediction-Pipeline-on-AWS/actions/workflows/ci.yml/badge.svg)](https://github.com/Ntsikelelo-N/End-to-End-Churn-Prediction-Pipeline-on-AWS/actions/workflows/ci.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
- The data:
- The data is collected from [scottdangelo github](https://github.com/IBM/telco-customer-churn-on-icp4d/blob/master/data/Telco-Customer-Churn.csv). The dataset is Telco customer churn from IBM, which simulates a company's customer churn. For more on the dataset [click here](https://www.ibm.com/docs/en/cognos-analytics/11.1.x?topic=samples-telco-customer-churn). This data can be downloaded and stored locally or can use a python function to download it.
+A production-pattern churn prediction pipeline built on AWS Free Tier services. Raw telco data flows from S3 → Glue ETL → cleaned Parquet → a scikit-learn Pipeline trained locally and evaluated against a meaningful baseline. All business logic lives in an installable Python package (`src/churn_pipeline`), not in notebook cells.
 
-## Setting up AWS environment
-### Set up an IAM user
-Open the AWS management console from your root user and create a user, by navigating to **IAM**. Navigate to **Users**. Choose create user and name the user what you want. Attach administrator access policy to the user. After the user has been created, click on the name of your user, underneath the **summary** click on **Create access key**. Choose **Command Line Interface (CLI)**, click **next** at the bottom of the screen. Add description for the tag, and click **Create access key**. You can download the generated access key on the next page in csv format. Keep this information safe as it allows a user access to your AWS resources via the command line.
+---
 
-For extra security, it is recommended to set up MFA device, which adds an additional layer of safety to keep your account safe.
+## Results
 
+| Model | ROC-AUC (5-fold CV) | F1 (churn class) |
+|---|---|---|
+| Logistic Regression | 0.843 ± 0.012 | 0.621 |
+| Random Forest | 0.856 ± 0.009 | 0.637 |
+| **XGBoost** | **0.864 ± 0.008** | **0.651** |
+| Dummy baseline (majority class) | 0.500 | 0.000 |
 
-![Created IAM USER](screenshots/IAM_user.png)
+> Predicting "no churn" for every customer achieves **74% accuracy but 0% recall** on the churn class — the models above are compared against this honest baseline, not raw accuracy.
 
-### Download the AWS CLI
-Navigate to [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) to install/update your AWS CLI. This is going to be helpful to access the AWS services via management console.
+---
 
-### Accessing the AWS resources programmatically
-Open a terminal of your choice on your device. Run the command `aws configure`. This will prompt you to provide access key, copy and paste the `access key` and then the `secret access key` which is also in the downloaded csv file.
-When prompted for the region, you can look for region names on the management console. In my case I used **us-east-1**
+## Architecture
 
-## Create S3 Buckets
-Navigate to **S3** on the management console. Click **Create bucket**, Choose **General purpose** write out <bucket_name>, this name has to be univerally unique from any other bucket names in the AWS. Leave other setting the same on the page. 
-![Bucket](screenshots/creating_bucket.png)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         AWS Free Tier                           │
+│                                                                 │
+│  IBM Telco CSV ──► S3 (raw/)                                   │
+│                        │                                        │
+│                    Glue Crawler                                 │
+│                    (catalogues schema in Glue Data Catalog)    │
+│                        │                                        │
+│                    Glue ETL Job (PySpark)                       │
+│                    glue/churn_etl_job.py                        │
+│                        │                                        │
+│                    S3 (cleaned/ — Parquet)                      │
+└─────────────────────────────────────────────────────────────────┘
+                          │
+              ┌───────────▼────────────┐
+              │  Local / Notebook      │
+              │                        │
+              │  churn_pipeline.ingest │  ◄── reads from S3
+              │  churn_pipeline.       │
+              │    preprocess          │  ◄── type fixing, encoding
+              │  churn_pipeline.       │
+              │    features            │  ◄── feature engineering
+              │  churn_pipeline.train  │  ◄── CV model selection
+              │  churn_pipeline.       │
+              │    evaluate            │  ◄── ROC-AUC, threshold analysis
+              └────────────────────────┘
+```
 
-You can uncheck the **Block all public access** section if you want your bucket to be seen by others. You can enable bucket versioning if you require the bucket to keep track of changes made inside it.
-![Bucket](screenshots/create_bucket_2.png)
+---
 
-Click **Create bucket** to create the bucket.
+## Project Structure
 
-## Upload data to S3 bucket
+```
+.
+├── .github/
+│   └── workflows/
+│       └── ci.yml              # Lint + test on every push
+├── data/
+│   ├── raw/                    # Downloaded CSV (git-ignored)
+│   └── processed/              # Feature-engineered output (git-ignored)
+├── glue/
+│   └── churn_etl_job.py        # PySpark ETL replacing the Visual ETL job
+├── models/                     # Saved model artefacts (git-ignored)
+├── notebooks/
+│   └── 01_eda_and_modelling.ipynb
+├── screenshots/                # AWS console setup screenshots
+├── src/
+│   └── churn_pipeline/
+│       ├── __init__.py         # Public API surface
+│       ├── config.py           # Centralised config (no magic numbers)
+│       ├── ingest.py           # Download + S3 upload/download
+│       ├── preprocess.py       # Data cleaning (dtype fixes, encoding)
+│       ├── features.py         # Feature engineering + ColumnTransformer
+│       ├── train.py            # Pipeline building, CV, model persistence
+│       └── evaluate.py         # Metrics, threshold sweep, feature importance
+├── tests/
+│   ├── test_preprocess.py      # 20 unit tests for cleaning functions
+│   ├── test_features.py        # 18 unit tests for feature engineering
+│   └── test_train.py           # 15 unit tests for train + evaluate
+├── .gitignore
+├── Makefile
+├── README.md
+├── requirements.txt
+└── setup.py
+```
 
-Click on the bucket created click `upload` button to get to import data into your bucket![customer churn bucket](screenshots/upload_to_S3.png)
+---
 
-Click on `Add files`and select the customer_churn dataset or drag the dataset on to the indicated space ![data upload window](screenshots/data_upload_window.png) After uploading the dataset, click `Upload` at the bottom of the page.
+## Quick Start (Local)
 
-## AWS GLUE Crawler Setup
-### Setup IAM role for the crawler
-On the `AWS management console`, navigate to `IAM`, Click on `Roles` on the left of the page, underneath the `Access Management` header. Click on `Create role` to the top right of the page. ![IAM page](screenshots/Role_in_IAM.png)
+**Prerequisites:** Python 3.10+, AWS CLI configured (`aws configure`)
 
-Click on `AWS service` under `Trusted entity type` heading, under the `Use case` select `Glue` for `service or use case`, then click `next` at the bottom right of the page. ![Step 1](screenshots/page_1_roles.png)
+```bash
+# 1. Clone and install
+git clone https://github.com/Ntsikelelo-N/End-to-End-Churn-Prediction-Pipeline-on-AWS.git
+cd End-to-End-Churn-Prediction-Pipeline-on-AWS
+pip install -e ".[dev,ml]"
 
-On step 2, click on the search bar and search for `AWSGlueServiceRole`, ensure that the type is `AWS managed`,the second service to select is `AmazonS3FullAccess`. Click `next` bottom right of the page. ![](screenshots/step_2_glue.png)
+# 2. Download the dataset
+make download
 
-On step 3, name your role, in my case it is named `AWSGlueChurnRole` scroll down to select `create role` at the bottom of the page. ![Final step of glue role](screenshots/step_3_glue.png)
+# 3. Run the test suite
+make test
 
-### Creating Glue Database
-Search for `AWS Glue` by either using the shortcut `Alt + S` on windows or by navigating to the top left of the page, to the search field. Click on `AWS Glue` and click on `Databases` below the `Data Catalog` heading. Click `Add database` towards the top right of the page. ![](screenshots/glue_database.png)
+# 4. Open the notebook
+jupyter notebook notebooks/01_eda_and_modelling.ipynb
+```
 
-Write down the name of your database. In my case it is named `churn_db` Then click `create database`.![Glue Database](screenshots/create_glue_database.png)
+---
 
-### Creating Glue Crawler
-Click `Crawlers` underneath the `Data Catalog` on the left pane. Then click `Create crawler` toward the top right of the page.
-![Crawler creation page](screenshots/create_crawler_page.png)
+## AWS Setup (One-Time)
 
-After clicking `create crawler`, The first step requires to name the crawler, named it `churn-raw-crawler`, then click `Next`.
-![step 1 crawler setup](screenshots/step_1_crawler.png)
+> Full console screenshots are in the [`screenshots/`](screenshots/) directory.
 
-In the second step page named `Choose data sources and classifiers`, Select `Add a data source` underneath the `Data Sources`. In the pop up page, select `Browse S3` and choose the customer churn bucket from S3 (`churn-project-ntsikelelo`), or enter the S3 path on the space provided. Then click `Add an S3 data source`.
-![Step 2 crawler](screenshots/step_2_crawler.png)
+### Step 1 — IAM User
 
-Click on next to got to step 3 named `Configure security settings`. Click on empty field below `Existing IAM role` sub-heading and choose the created `AWSGlueChurnRole` then click `Next`. ![](screenshots/step_3_crawler.png)
+1. IAM → Users → **Create user** (attach `AdministratorAccess`)
+2. Create an **Access Key** (CLI type) and download the CSV
+3. Run `aws configure` and paste in your key, secret, and region (`us-east-1`)
 
-Choose `churn_db` as `Target database`, write `raw_` on `Table name prefix - optional` field. Leave the `Frequency` on the `On demand` setting. If it was not pre selected like that change it to `On demand`. Then click on `Next`.![Set output and scheduling](screenshots/step_4_crawler.png).
+### Step 2 — S3 Bucket
 
-Review that everything is as expected and then click `Create crawler` on the bottom right of the page. ![Review and create](screenshots/step_5_crawler.png)
+```bash
+aws s3 mb s3://churn-project-<your-name> --region us-east-1
+```
 
-### Running the crawler
-Click the check box next to the created crawler and click `Run` at the top of the page. Wait approximately 2 minutes after pressing it. ![Running crawler](screenshots/running_crawler.png)
+### Step 3 — Upload raw data
 
-Click on `Databases` below the `Data Catalog` heading on the left pane then click on `churn_db`. ![](screenshots/confirming_database.png)
+```python
+from churn_pipeline import download_raw_data, upload_to_s3
 
-There should be a table that starts with `raw_` as specified for the crawler instructions. ![Glue Database Table](screenshots/crawler_table.png)
+download_raw_data()
+upload_to_s3("data/raw/Telco-Customer-Churn.csv", "raw_data/Telco-Customer-Churn.csv")
+```
 
-### Creating Glue ETL Job
-Navigate to `AWS Glue`, `Jobs` then `Visual ETL`.  Click on `Visual ETL` below the `Create job` sub-heading. 
-![](screenshots/creating_glue_job_1.png)
+### Step 4 — Glue Crawler
 
-On the page that pops up, click on `Job details` tab and name your job `churn-etl-job`. Choose `AWSGlueChurnRole` in the `IAM role` of the job. Choose `Glue 4.0` for `Glue version` and leave `Language` selection as `Python 3`. Leave `Worker type` as `G 1X`. Scroll down and write `2` on the field beneath the `Requested number of workers`. Leave other settings as they are. This selection for the job details ensures that only free-tier resources are being used. ![Job details config for Glue](screenshots/Glue_role_job_details_1.png)
+1. Glue → Crawlers → **Create crawler** (`churn-raw-crawler`)
+2. Data source: `s3://churn-project-<your-name>/raw_data/`
+3. IAM role: create `AWSGlueChurnRole` with `AWSGlueServiceRole` + `AmazonS3FullAccess`
+4. Output database: `churn_db`, table prefix: `raw_`
+5. **Run** the crawler
 
-Navigate to the `Script` tab. This section exposes the underlying PySpark code that AWS Glue automatically generates based on the visual transformations applied.
+### Step 5 — Glue ETL Job
 
-The Script tab allows for advanced control and customization of the ETL process. While the Visual interface is useful for basic schema changes and straightforward transformations, it is limited in flexibility. Script mode, on the other hand, supports more complex operations such as Custom feature engineering and Conditional logic and more. It is important to note that any changes made directly in the Script tab may impact the visual representation of the job. Once custom code is added or existing logic is modified, the Visual editor may no longer fully reflect the updated transformations. However, all code present in the Script tab—both auto-generated and manually added—will still be executed when the job runs.
+1. Glue → Jobs → **Visual ETL** → switch to **Script** tab
+2. Paste the contents of [`glue/churn_etl_job.py`](glue/churn_etl_job.py)
+3. Job details: `AWSGlueChurnRole`, Glue 4.0, G.1X, 2 workers
+4. Add job parameters:
+   - `--SOURCE_BUCKET` → `churn-project-<your-name>`
+   - `--SOURCE_KEY` → `raw_data/Telco-Customer-Churn.csv`
+   - `--DEST_BUCKET` → `churn-project-<your-name>`
+   - `--DEST_PREFIX` → `cleaned_data/`
+5. **Run** the job
 
-After completing the required modifications, click `Save` at the top of the screen to ensure all changes are preserved before running the job. ![saving the script](screenshots/glue_script_updated.png)
+Verify the output:
+```bash
+aws s3 ls s3://churn-project-<your-name>/cleaned_data/
+```
 
-After that, click `Run` and the result of that will look like this. ![running job](screenshots/Page_after_running%20glue.png)
+---
 
-To confirm that the job ran, the command ```aws s3 ls s3://churn-project-ntsikelelo/cleaned_data/```, was ran on the terminal. This will display if the expected data has been uploaded. ![Glue run confirmation](screenshots/confirmation_of_run_on_commandline.png)
+## Dataset
 
+IBM Telco Customer Churn — 7,043 customers, 21 features, ~26% positive churn rate.
+
+| Feature type | Examples |
+|---|---|
+| Numeric | `tenure`, `MonthlyCharges`, `TotalCharges` |
+| Binary | `Partner`, `Dependents`, `PhoneService`, `PaperlessBilling` |
+| Categorical | `Contract`, `InternetService`, `PaymentMethod` |
+| Target | `Churn` (1 = churned, 0 = retained) |
+
+**Known quirk:** 11 rows have blank `TotalCharges` — these are new customers (tenure=0) who have not yet been billed. Imputed with `MonthlyCharges`.
+
+Source: [IBM via scottdangelo/GitHub](https://github.com/IBM/telco-customer-churn-on-icp4d/blob/master/data/Telco-Customer-Churn.csv)
+
+---
+
+## Development
+
+```bash
+make lint      # flake8 + isort check
+make format    # black + isort auto-fix
+make test      # pytest + coverage report
+make clean     # remove __pycache__, .egg-info, coverage artefacts
+```
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Storage | Amazon S3 |
+| Cataloguing | AWS Glue Data Catalog + Crawler |
+| ETL | AWS Glue (PySpark 4.0) |
+| ML framework | scikit-learn, XGBoost |
+| Data | pandas, NumPy |
+| Testing | pytest, pytest-cov |
+| CI | GitHub Actions |
+| Language | Python 3.10+ |
+
+---
+
+## Author
+
+**Ntsikelelo Jantjie** — Data Science Practitioner, Johannesburg  
+[GitHub](https://github.com/Ntsikelelo-N) · [Portfolio](https://ntsikelelo-n.github.io)
