@@ -121,9 +121,7 @@ def threshold_sweep(
                     ),
                     4,
                 ),
-                "recall": round(
-                    float((y_pred & y_test.values).sum() / y_test.sum()), 4
-                ),
+                "recall": round(float((y_pred & y_test.values).sum() / y_test.sum()), 4),
                 "f1": round(float(f1_score(y_test, y_pred, zero_division=0)), 4),
             }
         )
@@ -197,8 +195,7 @@ def get_feature_importance(
         importances = np.abs(classifier.coef_[0])
     else:
         logger.warning(
-            "Classifier %s has no feature_importances_ or coef_. "
-            "Returning empty DataFrame.",
+            "Classifier %s has no feature_importances_ or coef_. " "Returning empty DataFrame.",
             type(classifier).__name__,
         )
         return pd.DataFrame(columns=["feature", "importance"])
