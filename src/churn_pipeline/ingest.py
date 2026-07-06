@@ -16,7 +16,8 @@ import pandas as pd
 import requests
 from botocore.exceptions import BotoCoreError, ClientError
 
-from churn_pipeline.config import aws, data as data_cfg
+from churn_pipeline.config import aws
+from churn_pipeline.config import data as data_cfg
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Source download
 # ---------------------------------------------------------------------------
+
 
 def download_raw_data(
     url: str = data_cfg.source_url,
@@ -88,6 +90,7 @@ def load_raw_dataframe(path: Optional[str] = None) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # S3 helpers
 # ---------------------------------------------------------------------------
+
 
 def _get_s3_client():
     """Return a boto3 S3 client using the configured region.

@@ -40,9 +40,7 @@ def fix_total_charges(df: pd.DataFrame) -> pd.DataFrame:
     if n_missing > 0:
         # New customers: TotalCharges ≈ MonthlyCharges for tenure=0
         df["TotalCharges"] = df["TotalCharges"].fillna(df["MonthlyCharges"])
-        logger.info(
-            "Imputed %d missing TotalCharges values with MonthlyCharges.", n_missing
-        )
+        logger.info("Imputed %d missing TotalCharges values with MonthlyCharges.", n_missing)
 
     return df
 
@@ -134,9 +132,7 @@ def validate_no_nulls(df: pd.DataFrame) -> pd.DataFrame:
     cols_with_nulls = null_counts[null_counts > 0]
 
     if not cols_with_nulls.empty:
-        raise ValueError(
-            f"Cleaning pipeline left nulls in columns:\n{cols_with_nulls.to_string()}"
-        )
+        raise ValueError(f"Cleaning pipeline left nulls in columns:\n{cols_with_nulls.to_string()}")
 
     logger.info("Data validation passed: no nulls detected.")
     return df

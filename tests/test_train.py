@@ -8,6 +8,7 @@ These tests run without AWS credentials or the actual churn dataset.
 """
 
 import os
+import sys
 import tempfile
 from pathlib import Path
 
@@ -17,9 +18,15 @@ import pytest
 from sklearn.datasets import make_classification
 from sklearn.pipeline import Pipeline
 
-import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from churn_pipeline.evaluate import (
+    dummy_roc_auc_baseline,
+    evaluate_on_test_set,
+    get_feature_importance,
+    majority_class_metrics,
+    threshold_sweep,
+)
 from churn_pipeline.train import (
     build_logistic_regression_pipeline,
     build_random_forest_pipeline,
@@ -28,18 +35,11 @@ from churn_pipeline.train import (
     load_model,
     save_model,
 )
-from churn_pipeline.evaluate import (
-    dummy_roc_auc_baseline,
-    evaluate_on_test_set,
-    get_feature_importance,
-    majority_class_metrics,
-    threshold_sweep,
-)
-
 
 # ---------------------------------------------------------------------------
 # Shared fixtures — synthetic binary classification data
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def synthetic_data():
@@ -71,6 +71,7 @@ def fitted_lr_pipeline(synthetic_data):
 # Pipeline construction
 # ---------------------------------------------------------------------------
 
+
 class TestPipelineBuilders:
     def test_lr_returns_pipeline(self, synthetic_data):
         X, _ = synthetic_data
@@ -99,6 +100,7 @@ class TestPipelineBuilders:
 # Cross-validation
 # ---------------------------------------------------------------------------
 
+
 class TestCrossValidate:
     def test_returns_valid_roc_auc(self, synthetic_data):
         X, y = synthetic_data
@@ -123,6 +125,7 @@ class TestCrossValidate:
 # ---------------------------------------------------------------------------
 # Model persistence
 # ---------------------------------------------------------------------------
+
 
 class TestModelPersistence:
     def test_save_creates_file(self, fitted_lr_pipeline):
@@ -159,6 +162,7 @@ class TestModelPersistence:
 # ---------------------------------------------------------------------------
 # Evaluation
 # ---------------------------------------------------------------------------
+
 
 class TestEvaluateOnTestSet:
     def test_roc_auc_in_valid_range(self, fitted_lr_pipeline, synthetic_data):

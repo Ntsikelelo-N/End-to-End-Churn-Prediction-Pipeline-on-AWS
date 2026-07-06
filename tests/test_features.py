@@ -6,12 +6,13 @@ train/test split preserves the class ratio (stratification), and that
 the ColumnTransformer is built with the expected transformer types.
 """
 
+import sys
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
 
-import sys
-from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from churn_pipeline.features import (
@@ -24,10 +25,10 @@ from churn_pipeline.features import (
     split_features_target,
 )
 
-
 # ---------------------------------------------------------------------------
 # Shared fixture — pre-cleaned DataFrame (binary encoded, no customerID)
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def cleaned_sample() -> pd.DataFrame:
@@ -53,7 +54,12 @@ def cleaned_sample() -> pd.DataFrame:
             "Contract": np.random.choice(["Month-to-month", "One year", "Two year"], n),
             "PaperlessBilling": np.random.randint(0, 2, n),
             "PaymentMethod": np.random.choice(
-                ["Electronic check", "Mailed check", "Bank transfer (automatic)", "Credit card (automatic)"],
+                [
+                    "Electronic check",
+                    "Mailed check",
+                    "Bank transfer (automatic)",
+                    "Credit card (automatic)",
+                ],
                 n,
             ),
             "MonthlyCharges": np.random.uniform(20, 120, n),
@@ -66,6 +72,7 @@ def cleaned_sample() -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # add_charges_per_month
 # ---------------------------------------------------------------------------
+
 
 class TestAddChargesPerMonth:
     def test_column_is_added(self, cleaned_sample):
@@ -95,6 +102,7 @@ class TestAddChargesPerMonth:
 # ---------------------------------------------------------------------------
 # add_tenure_group
 # ---------------------------------------------------------------------------
+
 
 class TestAddTenureGroup:
     def test_column_is_added(self, cleaned_sample):
@@ -127,6 +135,7 @@ class TestAddTenureGroup:
 # add_service_count
 # ---------------------------------------------------------------------------
 
+
 class TestAddServiceCount:
     def test_column_is_added(self, cleaned_sample):
         result = add_service_count(cleaned_sample)
@@ -148,9 +157,17 @@ class TestAddServiceCount:
 
     def test_no_services_gives_zero(self):
         df = pd.DataFrame(
-            {col: [0] for col in
-             ["OnlineSecurity", "OnlineBackup", "DeviceProtection",
-              "TechSupport", "StreamingTV", "StreamingMovies"]}
+            {
+                col: [0]
+                for col in [
+                    "OnlineSecurity",
+                    "OnlineBackup",
+                    "DeviceProtection",
+                    "TechSupport",
+                    "StreamingTV",
+                    "StreamingMovies",
+                ]
+            }
         )
         result = add_service_count(df)
         assert result.loc[0, "ServiceCount"] == 0
@@ -163,6 +180,7 @@ class TestAddServiceCount:
 # ---------------------------------------------------------------------------
 # engineer_features (integration)
 # ---------------------------------------------------------------------------
+
 
 class TestEngineerFeatures:
     def test_all_derived_cols_present(self, cleaned_sample):
@@ -179,6 +197,7 @@ class TestEngineerFeatures:
 # split_features_target
 # ---------------------------------------------------------------------------
 
+
 class TestSplitFeaturesTarget:
     def test_target_not_in_features(self, cleaned_sample):
         X, y = split_features_target(cleaned_sample)
@@ -193,6 +212,7 @@ class TestSplitFeaturesTarget:
 # ---------------------------------------------------------------------------
 # make_train_test_split
 # ---------------------------------------------------------------------------
+
 
 class TestMakeTrainTestSplit:
     def test_sizes_are_correct(self, cleaned_sample):
@@ -214,9 +234,11 @@ class TestMakeTrainTestSplit:
 # build_preprocessor
 # ---------------------------------------------------------------------------
 
+
 class TestBuildPreprocessor:
     def test_returns_column_transformer(self, cleaned_sample):
         from sklearn.compose import ColumnTransformer
+
         X, _ = split_features_target(engineer_features(cleaned_sample))
         prep = build_preprocessor(X)
         assert isinstance(prep, ColumnTransformer)

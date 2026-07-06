@@ -11,7 +11,7 @@ notebook can compare candidates before committing to a final model.
 import logging
 import pickle
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 import numpy as np
 import pandas as pd
@@ -191,9 +191,7 @@ def compare_models(X_train: pd.DataFrame, y_train: pd.Series) -> pd.DataFrame:
         records.append(record)
 
     results_df = (
-        pd.DataFrame(records)
-        .sort_values("mean_roc_auc", ascending=False)
-        .reset_index(drop=True)
+        pd.DataFrame(records).sort_values("mean_roc_auc", ascending=False).reset_index(drop=True)
     )
     return results_df
 

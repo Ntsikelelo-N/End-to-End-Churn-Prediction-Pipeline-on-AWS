@@ -9,10 +9,10 @@ propagates everywhere — no more hunting through cells.
 from dataclasses import dataclass, field
 from typing import List
 
-
 # ---------------------------------------------------------------------------
 # AWS / Storage
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class AWSConfig:
@@ -29,6 +29,7 @@ class AWSConfig:
 # ---------------------------------------------------------------------------
 # Dataset
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class DataConfig:
@@ -78,6 +79,7 @@ class DataConfig:
 # ---------------------------------------------------------------------------
 # Model hyperparameters
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class ModelConfig:

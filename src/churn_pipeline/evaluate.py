@@ -8,7 +8,7 @@ and feature importance — all returned as clean DataFrames for notebook display
 """
 
 import logging
-from typing import Dict, Any, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Core metrics
 # ---------------------------------------------------------------------------
+
 
 def evaluate_on_test_set(
     pipeline: Pipeline,
@@ -110,8 +111,14 @@ def threshold_sweep(
         records.append(
             {
                 "threshold": round(float(t), 2),
-                "precision": round(float(np.where(y_pred.sum() > 0,
-                    (y_pred & y_test.values).sum() / y_pred.sum(), 0.0)), 4),
+                "precision": round(
+                    float(
+                        np.where(
+                            y_pred.sum() > 0, (y_pred & y_test.values).sum() / y_pred.sum(), 0.0
+                        )
+                    ),
+                    4,
+                ),
                 "recall": round(float((y_pred & y_test.values).sum() / y_test.sum()), 4),
                 "f1": round(float(f1_score(y_test, y_pred, zero_division=0)), 4),
             }
@@ -155,6 +162,7 @@ def get_precision_recall_curve_data(
 # Feature importance
 # ---------------------------------------------------------------------------
 
+
 def get_feature_importance(
     pipeline: Pipeline,
     X: pd.DataFrame,
@@ -185,8 +193,7 @@ def get_feature_importance(
         importances = np.abs(classifier.coef_[0])
     else:
         logger.warning(
-            "Classifier %s has no feature_importances_ or coef_. "
-            "Returning empty DataFrame.",
+            "Classifier %s has no feature_importances_ or coef_. " "Returning empty DataFrame.",
             type(classifier).__name__,
         )
         return pd.DataFrame(columns=["feature", "importance"])
@@ -203,6 +210,7 @@ def get_feature_importance(
 # ---------------------------------------------------------------------------
 # Baseline comparison (mandatory for credible ML work)
 # ---------------------------------------------------------------------------
+
 
 def dummy_roc_auc_baseline(y_test: pd.Series) -> float:
     """Return the ROC-AUC of a random classifier (always 0.5).

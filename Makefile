@@ -38,11 +38,11 @@ test:
 
 lint:
 	$(PYTHON) -m flake8 $(SRC) $(TESTS) --max-line-length=100 --ignore=E501,W503
-	$(PYTHON) -m isort $(SRC) $(TESTS) --check-only --diff
+	$(PYTHON) -m isort $(SRC) $(TESTS) --profile black --check-only --diff 
 
 format:
 	$(PYTHON) -m black $(SRC) $(TESTS) --line-length=100
-	$(PYTHON) -m isort $(SRC) $(TESTS)
+	$(PYTHON) -m isort $(SRC) $(TESTS) --profile black
 
 # ── Data ─────────────────────────────────────────────────────────────────────
 

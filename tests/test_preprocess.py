@@ -7,13 +7,14 @@ changes. They use a minimal synthetic fixture so no network or AWS access is
 required — tests run offline in CI.
 """
 
+# Adjust path if running tests from repo root without `pip install -e .`
+import sys
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
 
-# Adjust path if running tests from repo root without `pip install -e .`
-import sys
-from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from churn_pipeline.preprocess import (
@@ -26,10 +27,10 @@ from churn_pipeline.preprocess import (
     validate_no_nulls,
 )
 
-
 # ---------------------------------------------------------------------------
 # Shared fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def raw_sample() -> pd.DataFrame:
@@ -66,6 +67,7 @@ def raw_sample() -> pd.DataFrame:
 # drop_id_column
 # ---------------------------------------------------------------------------
 
+
 class TestDropIdColumn:
     def test_removes_customer_id(self, raw_sample):
         result = drop_id_column(raw_sample)
@@ -84,6 +86,7 @@ class TestDropIdColumn:
 # ---------------------------------------------------------------------------
 # fix_total_charges
 # ---------------------------------------------------------------------------
+
 
 class TestFixTotalCharges:
     def test_blank_is_imputed_with_monthly_charges(self, raw_sample):
@@ -113,6 +116,7 @@ class TestFixTotalCharges:
 # ---------------------------------------------------------------------------
 # encode_binary_columns
 # ---------------------------------------------------------------------------
+
 
 class TestEncodeBinaryColumns:
     def test_yes_maps_to_one(self, raw_sample):
@@ -144,6 +148,7 @@ class TestEncodeBinaryColumns:
 # encode_target
 # ---------------------------------------------------------------------------
 
+
 class TestEncodeTarget:
     def test_yes_maps_to_one(self, raw_sample):
         result = encode_target(raw_sample)
@@ -162,6 +167,7 @@ class TestEncodeTarget:
 # encode_gender
 # ---------------------------------------------------------------------------
 
+
 class TestEncodeGender:
     def test_male_maps_to_one(self, raw_sample):
         result = encode_gender(raw_sample)
@@ -175,6 +181,7 @@ class TestEncodeGender:
 # ---------------------------------------------------------------------------
 # validate_no_nulls
 # ---------------------------------------------------------------------------
+
 
 class TestValidateNoNulls:
     def test_raises_on_nulls(self):
@@ -191,6 +198,7 @@ class TestValidateNoNulls:
 # ---------------------------------------------------------------------------
 # run_cleaning_pipeline (integration)
 # ---------------------------------------------------------------------------
+
 
 class TestRunCleaningPipeline:
     def test_output_shape_has_no_id_column(self, raw_sample):
