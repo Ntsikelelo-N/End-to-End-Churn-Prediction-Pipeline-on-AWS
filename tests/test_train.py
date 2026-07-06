@@ -17,7 +17,6 @@ import pytest
 from sklearn.datasets import make_classification
 from sklearn.pipeline import Pipeline
 
-
 from churn_pipeline.evaluate import (
     dummy_roc_auc_baseline,
     evaluate_on_test_set,
