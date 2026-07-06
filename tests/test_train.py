@@ -8,7 +8,6 @@ These tests run without AWS credentials or the actual churn dataset.
 """
 
 import os
-import sys
 import tempfile
 from pathlib import Path
 
@@ -18,7 +17,6 @@ import pytest
 from sklearn.datasets import make_classification
 from sklearn.pipeline import Pipeline
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from churn_pipeline.evaluate import (
     dummy_roc_auc_baseline,

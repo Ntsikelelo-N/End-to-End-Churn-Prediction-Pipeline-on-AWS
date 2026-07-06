@@ -15,7 +15,6 @@ import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
-from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from churn_pipeline.config import data as data_cfg
@@ -68,9 +67,9 @@ def add_tenure_group(df: pd.DataFrame) -> pd.DataFrame:
     bins = [0, 12, 24, 48, 72]
     labels = ["0-1yr", "1-2yr", "2-4yr", "4+yr"]
     df = df.copy()
-    df["TenureGroup"] = pd.cut(df["tenure"], bins=bins, labels=labels, include_lowest=True).astype(
-        str
-    )
+    df["TenureGroup"] = pd.cut(
+        df["tenure"], bins=bins, labels=labels, include_lowest=True
+    ).astype(str)
     return df
 
 
@@ -191,7 +190,9 @@ def build_preprocessor(X: pd.DataFrame) -> ColumnTransformer:
     Returns:
         Unfitted ColumnTransformer ready to be embedded in a Pipeline.
     """
-    numeric_features = [c for c in data_cfg.numeric_cols + ["AvgMonthlyCharges"] if c in X.columns]
+    numeric_features = [
+        c for c in data_cfg.numeric_cols + ["AvgMonthlyCharges"] if c in X.columns
+    ]
     categorical_features = [
         c for c in data_cfg.categorical_cols + ["TenureGroup"] if c in X.columns
     ]

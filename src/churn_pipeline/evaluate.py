@@ -114,12 +114,16 @@ def threshold_sweep(
                 "precision": round(
                     float(
                         np.where(
-                            y_pred.sum() > 0, (y_pred & y_test.values).sum() / y_pred.sum(), 0.0
+                            y_pred.sum() > 0,
+                            (y_pred & y_test.values).sum() / y_pred.sum(),
+                            0.0,
                         )
                     ),
                     4,
                 ),
-                "recall": round(float((y_pred & y_test.values).sum() / y_test.sum()), 4),
+                "recall": round(
+                    float((y_pred & y_test.values).sum() / y_test.sum()), 4
+                ),
                 "f1": round(float(f1_score(y_test, y_pred, zero_division=0)), 4),
             }
         )
@@ -193,7 +197,8 @@ def get_feature_importance(
         importances = np.abs(classifier.coef_[0])
     else:
         logger.warning(
-            "Classifier %s has no feature_importances_ or coef_. " "Returning empty DataFrame.",
+            "Classifier %s has no feature_importances_ or coef_. "
+            "Returning empty DataFrame.",
             type(classifier).__name__,
         )
         return pd.DataFrame(columns=["feature", "importance"])
@@ -240,7 +245,6 @@ def majority_class_metrics(y_test: pd.Series) -> Dict[str, float]:
     Returns:
         Dict with accuracy, recall, precision, f1 for the majority-class model.
     """
-    y_majority = np.zeros(len(y_test), dtype=int)
     churn_rate = float(y_test.mean())
     return {
         "accuracy": round(1 - churn_rate, 4),

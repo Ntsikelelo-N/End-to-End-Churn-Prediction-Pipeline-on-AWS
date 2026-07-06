@@ -8,14 +8,9 @@ required — tests run offline in CI.
 """
 
 # Adjust path if running tests from repo root without `pip install -e .`
-import sys
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import pytest
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from churn_pipeline.preprocess import (
     drop_id_column,
@@ -54,7 +49,11 @@ def raw_sample() -> pd.DataFrame:
             "StreamingMovies": ["No", "No internet service", "Yes"],
             "Contract": ["Month-to-month", "One year", "Two year"],
             "PaperlessBilling": ["Yes", "Yes", "No"],
-            "PaymentMethod": ["Electronic check", "Mailed check", "Bank transfer (automatic)"],
+            "PaymentMethod": [
+                "Electronic check",
+                "Mailed check",
+                "Bank transfer (automatic)",
+            ],
             "MonthlyCharges": [50.0, 70.0, 90.0],
             # Second row has a blank TotalCharges — the known IBM Telco quirk
             "TotalCharges": ["600.0", " ", "4320.0"],

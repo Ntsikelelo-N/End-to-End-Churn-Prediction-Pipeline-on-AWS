@@ -6,14 +6,9 @@ train/test split preserves the class ratio (stratification), and that
 the ColumnTransformer is built with the expected transformer types.
 """
 
-import sys
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import pytest
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from churn_pipeline.features import (
     add_charges_per_month,
@@ -80,12 +75,16 @@ class TestAddChargesPerMonth:
         assert "AvgMonthlyCharges" in result.columns
 
     def test_tenure_zero_uses_monthly_charges(self):
-        df = pd.DataFrame({"tenure": [0], "TotalCharges": [0.0], "MonthlyCharges": [55.0]})
+        df = pd.DataFrame(
+            {"tenure": [0], "TotalCharges": [0.0], "MonthlyCharges": [55.0]}
+        )
         result = add_charges_per_month(df)
         assert result.loc[0, "AvgMonthlyCharges"] == pytest.approx(55.0)
 
     def test_positive_tenure_divides_correctly(self):
-        df = pd.DataFrame({"tenure": [10], "TotalCharges": [500.0], "MonthlyCharges": [55.0]})
+        df = pd.DataFrame(
+            {"tenure": [10], "TotalCharges": [500.0], "MonthlyCharges": [55.0]}
+        )
         result = add_charges_per_month(df)
         assert result.loc[0, "AvgMonthlyCharges"] == pytest.approx(50.0)
 

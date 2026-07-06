@@ -7,7 +7,6 @@ the notebook thin and the logic reusable and testable.
 """
 
 import logging
-import os
 from pathlib import Path
 from typing import Optional
 
